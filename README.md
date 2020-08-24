@@ -17,7 +17,7 @@ Based on the body of the email and the state of Todoist the function will create
 
 The following application settings are needed by the function:
 
-| | | |
-|-|-|-|
+| | |
+|-|-|
 | TodoistAPI | `https://api.todoist.com/rest/v1/tasks` |
 | TodoistToken | `<your Todoist API token>` |
