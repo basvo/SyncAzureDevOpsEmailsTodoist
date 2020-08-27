@@ -92,10 +92,6 @@ namespace Basvo.Function
 
                     // Retrieve parent user story id (if available)                    
                     string pattern = @"User Story&nbsp;(.*?)<\/a>";
-                    // foreach (Match match in Regex.Matches(body, pattern, RegexOptions.IgnoreCase))
-                    // {
-
-                    // }
 
                     string parentUserStoryNumber = null;
                     var match = Regex.Match(body, pattern, RegexOptions.IgnoreCase);
@@ -104,9 +100,7 @@ namespace Basvo.Function
                         parentUserStoryNumber = match.Groups[1].Value.Trim();
                     }
 
-
                     long parentTaskId = 0;
-
                     foreach (var task in tasks)
                     {
                         if (!String.IsNullOrEmpty(parentUserStoryNumber) && task.Content.Contains($"User Story {parentUserStoryNumber}:"))
@@ -162,6 +156,8 @@ namespace Basvo.Function
             catch (Exception ex)
             {
                 responseMessage = ex.ToString();
+                log.LogError(responseMessage);
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
 
             log.LogInformation(responseMessage);
