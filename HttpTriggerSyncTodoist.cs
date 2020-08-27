@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Basvo.Function
 {
@@ -54,7 +55,7 @@ namespace Basvo.Function
 
                 var tasks = JsonConvert.DeserializeObject<List<TodoistTask>>(content as string);
 
-                if (body.Contains("state was changed to Closed"))
+                if (body.Contains("state was changed to <i>Closed</i>"))
                 {
                     // The body contains information that the task has been completed
                     bool taskFound = false;
@@ -89,8 +90,30 @@ namespace Basvo.Function
                     // Check if the task already exists before creating a new one
                     bool createTask = true;
 
+                    // Retrieve parent user story id (if available)                    
+                    string pattern = @"User Story&nbsp;(.*?)<\/a>";
+                    // foreach (Match match in Regex.Matches(body, pattern, RegexOptions.IgnoreCase))
+                    // {
+
+                    // }
+
+                    string parentUserStoryNumber = null;
+                    var match = Regex.Match(body, pattern, RegexOptions.IgnoreCase);
+                    if (match.Success && match.Groups.Count > 0)
+                    {
+                        parentUserStoryNumber = match.Groups[1].Value.Trim();
+                    }
+
+
+                    long parentTaskId = 0;
+
                     foreach (var task in tasks)
                     {
+                        if (!String.IsNullOrEmpty(parentUserStoryNumber) && task.Content.Contains($"User Story {parentUserStoryNumber}:"))
+                        {
+                            // Found a matching parent Task Id
+                            parentTaskId = task.Id;
+                        }
                         if (task.Content == name)
                         {
                             // Active task found, do not create
@@ -116,11 +139,23 @@ namespace Basvo.Function
 
                     if (createTask)
                     {
-                        // Create a new Task
-                        var createTaskContent = new StringContent("{\"content\": \"" + name + "\"}", Encoding.UTF8, "application/json");
-                        var createTaskResult = await client.PostAsync(url, createTaskContent);
-                        createTaskResult.EnsureSuccessStatusCode();
-                        responseMessage = "Task created in Todoist";
+                        if (parentTaskId > 0)
+                        {
+                            // Create a new Task attached to parent
+                            var createTaskContent = new StringContent("{\"content\": \"" + name + "\", \"parent_id\": " +parentTaskId +"}", Encoding.UTF8, "application/json");
+                            var createTaskResult = await client.PostAsync(url, createTaskContent);
+                            
+                            createTaskResult.EnsureSuccessStatusCode();
+                            responseMessage = $"Task created in Todoist under parent {parentTaskId}";
+                        }
+                        else
+                        {
+                            // Create a new Task
+                            var createTaskContent = new StringContent("{\"content\": \"" + name + "\"}", Encoding.UTF8, "application/json");
+                            var createTaskResult = await client.PostAsync(url, createTaskContent);
+                            createTaskResult.EnsureSuccessStatusCode();
+                            responseMessage = "Task created in Todoist";
+                        }
                     }
                 }
             }
