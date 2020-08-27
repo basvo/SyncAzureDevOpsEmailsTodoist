@@ -2,14 +2,14 @@
 
 A small Azure Function I wrote to sync an Azure Devops on-prem instance with Todoist. This way I can update tasks in Azure DevOps on-prem which are reflected pretty much instantly in Todoist.
 
-The intention is to enable Azure Devops notification emails which can be picked up by a Power Automate workflow. This flow should then call this function with a HTTP Post, forwarding the `subject` and `bodyPreview` variables of the notification email in JSON format.
+The intention is to enable Azure Devops notification emails which can be picked up by a Power Automate workflow. This flow should then call this function with a HTTP Post, forwarding the `subject` and `body` variables of the notification email in JSON format.
 
 Example of a HTTP Post the function accepts:
 
 ```json
 {
   "name": "Task 1337 - Azure DevOps Task",
-  "body": "Azure DevOps Task\r\n        Azure DevOps Server\r\nTask 1337 state was changed to Closed\r\n\r\nAzure DevOps Task\r\n\r\nView work item\r\nChanged By      John Doe\r\nState   Closed     Active\r\nReason  Completed     Reactivated\r\nWe sent you this no"
+  "body": "<html><head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta content=\"text/html; charset=utf-8\"><meta content=\"IE=edge\"><!--snip--></html>"
 }
 ```
 
